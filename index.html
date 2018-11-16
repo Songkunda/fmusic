@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>移动手势音乐播放</title>
+    <meta name="keywords" content="移动播放器">
+    <meta name="description" content="移动播放器">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="./js/babel.js"></script>
+    <script src="./js/react.js" crossorigin></script>
+    <script src="./js/react_dom.js" crossorigin></script>
+    <style>
+        #app {
+            position: relative;
+            height: 667px;
+            width: 375px;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        .title {
+            position: absolute;
+            bottom: 45px;
+            left: 8px;
+            color: white;
+            text-shadow: 0 0 2px black;
+        }
+
+        .author {
+            position: absolute;
+            bottom: 25px;
+            left: 8px;
+            color: white;
+            text-shadow: 0 0 2px black;
+        }
+
+        .pic {
+            position: absolute;
+            top: 125px;
+            height: 375px;
+            width: 375px;
+
+        }
+
+        .buttons {
+            position: absolute;
+            bottom: 0;
+            left: 8px;
+            right: 8px;
+            display: flex;
+        }
+
+        .buttons button {
+            flex: 1;
+        }
+
+        .musicDynamicEffect {
+            position: absolute;
+            z-index: 99;
+            left: 0;
+            top: 125px;
+            width: 375px;
+            height: 375px;
+            /*background: rgba(0, 0, 0, .5);*/
+        }
+
+    </style>
+</head>
+<body>
+<div id="app"/>
+<script src="js/index.jsx" type="text/babel"></script>
+</body>
+
+</html>

@@ -367,16 +367,16 @@ class Audio extends React.Component {
         let x = this.c_height / 2;
         let y = this.c_height / 2;
         this.ctx.moveTo(x, y);
-
-        for (let i = 20; i < (375 / 2 + 20); i++) {
-            let v = this.dataArray[i];
+        let ca = 360/375;
+        for (let i = 1; i < 361; i=i+ca) {
+            let v = this.dataArray[Math.floor(i)+15];
             let y2 = v + y;
             this.ctx.fillStyle = 'rgba(114,114,114,.9)';
             this.ctx.moveTo(x, y - v - 1);
             this.ctx.lineTo(x, y2 + 1);
             this.ctx.moveTo(this.c_height - x, y - v - 1);
             this.ctx.lineTo(this.c_height - x, y2 + 1);
-            x++;
+            x=x+ca;
         }
 
 

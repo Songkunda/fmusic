@@ -293,7 +293,7 @@ class Audio extends React.Component {
             this.analyser = this.audioCtx.createAnalyser();
             this.analyser.minDecibels = -50;
             this.analyser.maxDecibels = 20;
-            this.analyser.smoothingTimeConstant = 0.9;
+            this.analyser.smoothingTimeConstant = 0.7;
             this.analyser.fftSize = 1024;
         } catch (e) {
             alert('Your browser does not support AudioContext!');
@@ -363,23 +363,44 @@ class Audio extends React.Component {
         this.ctx.fillStyle = 'rgba(0,0,0,.5)';
         this.ctx.fillRect(0, 0, this.c_width, this.c_height);
         this.analyser.getByteFrequencyData(this.dataArray);
-        this.ctx.beginPath();
-        let x = this.c_height / 2;
+        let x = this.c_width / 2;
         let y = this.c_height / 2;
         this.ctx.moveTo(x, y);
         let ca = 360/375;
-        for (let i = 1; i < 361; i=i+ca) {
+        this.ctx.beginPath();
+        for (let i = 10; i < 361; i=i+ca) {
             let v = this.dataArray[Math.floor(i)+15];
             let y2 = v + y;
-            this.ctx.fillStyle = 'rgba(114,114,114,.9)';
+            this.ctx.strokeStylet = 'rgba(114,114,114,1)';
+            this.ctx.lineWidth = ca;
+
             this.ctx.moveTo(x, y - v - 1);
             this.ctx.lineTo(x, y2 + 1);
             this.ctx.moveTo(this.c_height - x, y - v - 1);
             this.ctx.lineTo(this.c_height - x, y2 + 1);
             x=x+ca;
         }
+        this.ctx.stroke();
+        x=this.c_width / 2;
+        this.ctx.beginPath();
+        for (let i = 10; i < 3610; i=i+(ca/10)) {
+            let v = this.dataArray[Math.floor(i)+15];
+            let y2 = v + y;
+            //画圆
+            //计算坐标点内
+            let k = v*0.5;
+            let r1 = y+Math.cos(i-180)*(100);
+            let r2 = y+Math.sin(i-180) *(100);
+            let r3 =y+Math.cos(i-180) *(100+k+1);
+            let r4 =y+Math.sin(i-180) *(100+k+1);
+            // console.log(v);
+            this.ctx.strokeStyle= 'rgba(255,255,255,1)';
+            // this.ctx.lineWidth = ca*9;
 
-
+            this.ctx.moveTo(r1, r2);
+            this.ctx.lineTo(r3,r4);
+            x=x+(ca/10);
+        }
 
         this.ctx.stroke();
         // this.ctx.clearRect(100, 0, 30, 375);

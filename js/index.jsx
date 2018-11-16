@@ -363,9 +363,6 @@ class Audio extends React.Component {
         this.ctx.fillStyle = 'rgba(0,0,0,.5)';
         this.ctx.fillRect(0, 0, this.c_width, this.c_height);
         this.analyser.getByteFrequencyData(this.dataArray);
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = 'rgb(0, 0, 0)';
-        // console.log("musicData", this.dataArray.toLocaleString(), this.dataArray.length, this.sliceWidth);
         this.ctx.beginPath();
         let x = this.c_height / 2;
         let y = this.c_height / 2;
@@ -374,15 +371,12 @@ class Audio extends React.Component {
         for (let i = 20; i < (375 / 2 + 20); i++) {
             let v = this.dataArray[i];
             let y2 = v + y;
-            this.ctx.fillStyle = 'rgba(203,203,203,.6)';
+            this.ctx.fillStyle = 'rgba(114,114,114,.9)';
             this.ctx.moveTo(x, y - v - 1);
             this.ctx.lineTo(x, y2 + 1);
             this.ctx.moveTo(this.c_height - x, y - v - 1);
             this.ctx.lineTo(this.c_height - x, y2 + 1);
-            // this.ctx.moveTo(x, (y - v * 0.5 - 1));
-            // this.ctx.lineTo(x, (y2 - v * 0.5 + 1));
             x++;
-            // this.ctx.closePath();
         }
 
 

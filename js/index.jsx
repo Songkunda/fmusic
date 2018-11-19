@@ -18,8 +18,9 @@ const musicJson = [
         "title": "本地音乐",
         "author": "\u53cc\u7b19",
         "pic": "./backgroud.jpg",
-        // "url": "./music2.mp3",
-        "url": "./1542590494425519.m4a"
+        "url": "./music2.mp3",
+        // "url": "./1542590494425519.m4a"
+        // "pic": "https:\/\/p2.music.126.net\/uwF73BxhvWiR-Kxn0wGe0g==\/109951162927951204.jpg?param=200y200",
     },
     {
         "title": "\u5fc3\u505a\u3057\uff08Cover GUMI\uff09",
@@ -304,22 +305,27 @@ function draw() {
             draw_y = ~~(this.dataArray[i + 30] / 2) + 1;
         }
         this.ctx.beginPath();
-        this.ctx.strokeStyle = 'rgba(114,114,114,0.8)';
+        this.ctx.strokeStyle = `rgba(${240 - i},${240 - i},${240 - i},0.4)`;
         this.ctx.moveTo(i, draw_y);
         this.ctx.lineTo(i, 0);
         this.ctx.stroke();
         this.ctx.beginPath();
-        this.ctx.strokeStyle = `rgba(${255-i},${50},${100+i},0.8)`;
+        this.ctx.strokeStyle = `rgba(${255 - i},${50},${100 + i},0.8)`;
         this.ctx.moveTo(i, 0);
         this.ctx.lineTo(i, -draw_y);
         this.ctx.stroke();
     }
 
     //画半圆
+    this.ctx.save();
     this.ctx.beginPath();
-    this.ctx.strokeStyle = 'rgba(255,255,255,1)';
+    this.ctx.shadowBlur = 5;
+    this.ctx.shadowColor = "rgba(150,20,140,1)";
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = 'rgba(240,90,240,1)';
     this.ctx.arc(0, 0, 125, -0.4 * Math.PI, 0.4 * Math.PI);
     this.ctx.stroke();
+    this.ctx.restore();
 
     //复制翻转
     let from = {

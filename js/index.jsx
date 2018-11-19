@@ -6,13 +6,20 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
     setTimeout(callback, 1000 / 60);
 };
 
+const settings = {
+    size: 1024,
+    smoothing: 0.6,
+    minDecibels: -50,
+    maxDecibels: -15,
+};
 
 const musicJson = [
     {
         "title": "本地音乐",
         "author": "\u53cc\u7b19",
-        "pic": "https:\/\/p2.music.126.net\/uwF73BxhvWiR-Kxn0wGe0g==\/109951162927951204.jpg?param=200y200",
-        "url": "./music2.mp3",
+        "pic": "./backgroud.jpg",
+        // "url": "./music2.mp3",
+        "url": "./1542590494425519.m4a"
     },
     {
         "title": "\u5fc3\u505a\u3057\uff08Cover GUMI\uff09",
@@ -283,93 +290,60 @@ function draw() {
         return;
     }
     this.ctx.clearRect(0, 0, 375, 375);
-    this.ctx.fillStyle = 'rgba(0,0,0,.2)';
-    this.ctx.fillRect(0, 0, this.c_width, this.c_height);
     this.ctx.save();
+    this.ctx.fillStyle = 'rgba(0,0,0,.1)';
+    this.ctx.translate(this.c_width / 2, this.c_height / 2);
+    this.ctx.fillRect(0, -this.c_height / 2, this.c_width, this.c_height);
     this.analyser.getByteFrequencyData(this.dataArray);
-    let x = this.c_width / 2;
-    let y = this.c_height / 2;
-    this.ctx.moveTo(x, y);
-    let ca = 360 / 375;
-    this.ctx.strokeStyle = 'rgba(114,114,114,0.8)';
-    this.ctx.beginPath();
-    for (let i = 10; i < 361; i = i + ca) {
-        let v = this.dataArray[Math.floor(i) + 15];
-        let y2 = v + y;
-        this.ctx.lineWidth = ca;
-        this.ctx.moveTo(x, y - v - 1);
-        this.ctx.lineTo(x, y2 + 1);
-        this.ctx.moveTo(this.c_height - x, y - v - 1);
-        this.ctx.lineTo(this.c_height - x, y2 + 1);
-        x = x + ca;
-    }
+    //画线谱
+    this.ctx.lineWidth = 1;
 
-    this.ctx.stroke();
-
-    //
-
-    this.ctx.strokeStyle = 'rgba(255,255,255,1)';
-    const drawRound = () => {
-        x = this.c_width / 2;
-        this.ctx.beginPath();
-        for (let i = 10; i < 3600; i = i + (ca / 10)) {
-            let v = this.dataArray[Math.floor(i) + 15];
-            let y2 = v + y;
-            //画圆
-            //计算坐标点内
-            let k = v * 0.5;
-            let r1 = y + Math.cos(i - 180) * (100);
-            let r2 = y + Math.sin(i - 180) * (100);
-            let r3 = y + Math.cos(i - 180) * (100 + k + 1);
-            let r4 = y + Math.sin(i - 180) * (100 + k + 1);
-            this.ctx.moveTo(r1, r2);
-            this.ctx.lineTo(r3, r4);
-            x = x + (ca / 10);
+    for (let i = 0; i < this.c_width; i++) {
+        let draw_y = 1;
+        if (i > 30) {
+            draw_y = ~~(this.dataArray[i + 30] / 2) + 1;
         }
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = 'rgba(114,114,114,0.8)';
+        this.ctx.moveTo(i, draw_y);
+        this.ctx.lineTo(i, 0);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = `rgba(${255-i},${50},${100+i},0.8)`;
+        this.ctx.moveTo(i, 0);
+        this.ctx.lineTo(i, -draw_y);
         this.ctx.stroke();
     }
-    drawRound();
-    //
-    // x = this.c_width / 2;
-    // this.ctx.strokeStyle = 'rgba(255,170,255,0.35)';
-    // this.ctx.beginPath();
-    // for (let i = 10; i < 3600; i = i + (ca / 10)) {
-    //     let v = this.dataArray[Math.floor(i) + 15];
-    //     let y2 = v + y;
-    //     //画圆
-    //     //计算坐标点内
-    //     let k = v * 0.7;
-    //     let r1 = y + Math.cos(i - 180) * (120);
-    //     let r2 = y + Math.sin(i - 180) * (120);
-    //     let r3 = y + Math.cos(i - 180) * (120 + k + 3);
-    //     let r4 = y + Math.sin(i - 180) * (120 + k + 3);
-    //     this.ctx.moveTo(r1, r2);
-    //     this.ctx.lineTo(r3, r4);
-    //     x = x + (ca / 10);
-    // }
-    // this.ctx.stroke();
-    // //
-    // x = this.c_width / 2;
-    // this.ctx.strokeStyle = 'rgba(255,170,255,0.2)';
-    // this.ctx.beginPath();
-    // for (let i = 10; i < 3600; i = i + (ca / 10)) {
-    //     let v = this.dataArray[Math.floor(i) + 15];
-    //     let y2 = v + y;
-    //     //画圆
-    //     //计算坐标点内
-    //     let k = v * 0.7;
-    //     let r1 = y + Math.cos(i - 180) * (160);
-    //     let r2 = y + Math.sin(i - 180) * (160);
-    //     let r3 = y + Math.cos(i - 180) * (160 + k + 10);
-    //     let r4 = y + Math.sin(i - 180) * (160 + k + 10);
-    //     this.ctx.moveTo(r1, r2);
-    //     this.ctx.lineTo(r3, r4);
-    //     x = x + (ca / 10);
-    // }
-    // this.ctx.stroke();
+
+    //画半圆
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = 'rgba(255,255,255,1)';
+    this.ctx.arc(0, 0, 125, -0.4 * Math.PI, 0.4 * Math.PI);
+    this.ctx.stroke();
+
+    //复制翻转
+    let from = {
+        x: this.c_width / 2,
+        y: 0,
+        w: this.c_width / 2,
+        h: this.c_height
+    };
+    let to = {
+        x: 0,
+        y: 0,
+        w: this.c_width / 2,
+        h: this.c_height
+    };
     this.ctx.restore();
-    this.ctx.clearRect(170, 0, 35, 375);
-    this.ctx.fillRect(170, 0, 35, 375);
+    this.ctx.save();
+    this.ctx.setTransform(-1, 0, 0, 1, this.c_width / 2, 0);
+    this.ctx.beginPath();
+    this.ctx.drawImage(this.canvas.current, from.x, from.y, from.w, from.h, to.x, to.y, to.w, to.h);
+    this.ctx.stroke();
+    this.ctx.restore();
+    // this.ctx.beginPath();
+    // this.ctx.arc(0, 0, 125, 0.6 * Math.PI, 1.4 * Math.PI);
+
 
     requestAnimationFrame(this.draw);
 }
@@ -388,10 +362,10 @@ class Audio extends React.Component {
         try {
             this.audioCtx = new AudioContext();
             this.analyser = this.audioCtx.createAnalyser();
-            this.analyser.minDecibels = -50;
-            this.analyser.maxDecibels = 20;
-            this.analyser.smoothingTimeConstant = 0.75;
-            this.analyser.fftSize = 1024;
+            this.analyser.minDecibels = settings.minDecibels;
+            this.analyser.maxDecibels = settings.maxDecibels;
+            this.analyser.smoothingTimeConstant = settings.smoothing;
+            this.analyser.fftSize = settings.size * 2;
         } catch (e) {
             alert('Your browser does not support AudioContext!');
             console.log(e);
@@ -450,6 +424,8 @@ class Audio extends React.Component {
 
 
     changeIndex(value) {
+        this.audio.current.play();
+        return;
         let {index} = this.state;
         let newIndex = index + (Number(value) || 1);
         if (newIndex < 0) {
@@ -477,6 +453,7 @@ class Audio extends React.Component {
                 <img className={"pic"} src={music.pic}/>
                 <audio
                     controls
+                    loop
                     ref={this.audio}
                     id={"musicPlayer"}
                     src={music.url}

@@ -285,7 +285,7 @@ const musicJson = [
     }
 ];
 const musicsNumber = musicJson.length - 1;
-
+const PI = 3.1416;
 function draw() {
     if (this.playing === false) {
         console.log("未播放 退出");
@@ -300,12 +300,12 @@ function draw() {
     this.ctx.fillRect(0, -pathOfHeight, this.c_width, this.c_height);
     this.analyser.getByteFrequencyData(this.dataArray);
     //画线谱
-    let addR = 1.6 * Math.PI / this.c_width / 2;
+    let addR = .8 * PI / this.c_width ;
     let pass = ~~this.c_width * 0.075;
     let pass2 = ~~this.c_width * 0.175;
 
 
-    for (let i = 0, cr = -0.4 * Math.PI; i < pathOfWidth; i++ , cr += addR) {
+    for (let i = 0, cr = -0.4 * PI; i < pathOfWidth; i++ , cr += addR) {
         let draw_y = 1;
         if (i > 30) {
             draw_y += ~~(this.dataArray[i + 30] >> 1);
@@ -337,7 +337,14 @@ function draw() {
             this.ctx.lineWidth = 2;
             this.ctx.strokeStyle = "rgba(255,255,255,.9)";
             this.ctx.shadowColor = 'rgba(200,40,100,1)';
-            this.ctx.arc(0, 0, 125, -0.4 * Math.PI, 0.4 * Math.PI);
+            this.ctx.arc(0, 0, 125, -0.4 * PI, 0.4 * PI);
+            this.ctx.stroke();
+            this.ctx.beginPath();
+            this.ctx.shadowBlur = 20;
+            this.ctx.lineWidth = 10;
+            this.ctx.strokeStyle = "rgba(200,40,100,0.08)";
+            this.ctx.shadowColor = 'rgba(200,40,100,1)';
+            this.ctx.arc(0, 0, 155, -0.4 * PI, 0.4 * PI);
             this.ctx.stroke();
         }
 
@@ -362,7 +369,7 @@ function draw() {
                 this.ctx.strokeStyle = grd;
                 this.ctx.save();
                 this.ctx.beginPath();
-                this.ctx.rotate(Math.PI - cr)
+                this.ctx.rotate(PI - cr)
                 this.ctx.moveTo(0, 125 - w);
                 this.ctx.lineTo(0, 125 + w);
                 this.ctx.stroke();

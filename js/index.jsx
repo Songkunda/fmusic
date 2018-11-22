@@ -300,7 +300,7 @@ function draw() {
     this.ctx.fillRect(0, -pathOfHeight, this.c_width, this.c_height);
     this.analyser.getByteFrequencyData(this.dataArray);
     //画线谱
-    let addR = .8 * PI / this.c_width ;
+    let addR = .8 * PI / this.c_width;
     let pass = ~~this.c_width * 0.075;
     let pass2 = ~~this.c_width * 0.175;
 
@@ -313,19 +313,26 @@ function draw() {
         this.ctx.lineWidth = .5;
         this.ctx.beginPath();
         this.ctx.shadowBlur = 0;
-        let strokeColor = 240 - i;
-        this.ctx.strokeStyle = `rgba(${strokeColor},${strokeColor},${strokeColor},0.2)`;
-        // this.ctx.strokeStyle = `rgba(${255 - i},${50},${100 + i},1)`;
+        // let strokeColor = 240 - i;
+        // this.ctx.strokeStyle = `rgba(${strokeColor},${strokeColor},${strokeColor},0.35)`;
+        let grd2 = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
+        grd2.addColorStop(0, "rgba(240,240,240,0.4)");
+        grd2.addColorStop(0.2, "rgba(160,160,160,0.4)");
+        grd2.addColorStop(0.3, "rgba(120,120,120,0.4)");
+        grd2.addColorStop(0.4, "rgba(160,160,160,0.4)");
+        grd2.addColorStop(1, "rgba(100,100,100,0.2)");
+        this.ctx.strokeStyle = grd2;
         this.ctx.moveTo(i, draw_y);
         this.ctx.lineTo(i, 1);
         this.ctx.stroke();
         this.ctx.beginPath();
 
         let grd = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
-        grd.addColorStop(0, "rgba(230,230,230,0.0)");
-        grd.addColorStop(0.6, "rgba(240,70,240,0.5)");
-        grd.addColorStop(0.8, "rgba(150,70,200,0.5)");
-        grd.addColorStop(1, "rgba(0,0,0,0)");
+        grd.addColorStop(0, "rgba(255,70,170,0.4)");
+        grd.addColorStop(0.2, "rgba(200,10,100,1)");
+        grd.addColorStop(0.3, "rgba(100,50,200,1)");
+        grd.addColorStop(0.4, "rgba(200,10,100,1)");
+        grd.addColorStop(1, "rgba(50,50,0,0.4)");
         this.ctx.strokeStyle = grd;
         this.ctx.moveTo(i, 0);
         this.ctx.lineTo(i, -draw_y);
@@ -339,32 +346,29 @@ function draw() {
             this.ctx.shadowColor = 'rgba(200,40,100,1)';
             this.ctx.arc(0, 0, 125, -0.4 * PI, 0.4 * PI);
             this.ctx.stroke();
+
             this.ctx.beginPath();
-            this.ctx.shadowBlur = 20;
-            this.ctx.lineWidth = 10;
-            this.ctx.strokeStyle = "rgba(200,40,100,0.08)";
+            this.ctx.lineWidth = 4;
+            this.ctx.shadowBlur = 18;
+            this.ctx.strokeStyle = "rgba(200,40,100,0.05)";
             this.ctx.shadowColor = 'rgba(200,40,100,1)';
             this.ctx.arc(0, 0, 155, -0.4 * PI, 0.4 * PI);
             this.ctx.stroke();
         }
-
-
-        // this.ctx.strokeStyle = "rgba(255,255,255,1)";
-        this.ctx.shadowColor = 'rgba(200,10,100,0.3)';
+        this.ctx.shadowColor = 'rgba(200,40,100,1)';
         if (i > pass && i < pass2) {
             draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7 + 2;
             if (draw_y > 2) {
-
                 let w = ~~draw_y / 2;
                 this.ctx.lineWidth = 1;
                 this.ctx.shadowBlur = 4;
                 this.ctx.shadowColor = 'rgba(255,255,255,1)';
                 let grd = this.ctx.createLinearGradient(i, 125 - w, i, 125 + w);
                 grd.addColorStop(0, "rgba(200,10,200,0)");
-                grd.addColorStop(0.2, "rgba(200,10,100,0.3)");
+                grd.addColorStop(0.2, "rgba(200,40,120,0.3)");
                 grd.addColorStop(0.4, "rgba(255,255,255,1)");
                 grd.addColorStop(0.6, "rgba(255,255,255,1)");
-                grd.addColorStop(0.8, "rgba(200,10,100,0.3)");
+                grd.addColorStop(0.8, "rgba(200,40,120,0.3)");
                 grd.addColorStop(1, "rgba(200,10,200,0)");
                 this.ctx.strokeStyle = grd;
                 this.ctx.save();
@@ -517,7 +521,9 @@ class Audio extends React.Component {
             <div>
                 <span className={"title"}>曲名:{music.title}</span>
                 <span className={"author"}>作者:{music.author}</span>
-                <img className={"pic"} src={music.pic} />
+                {/* <img className={"pic"} src={music.pic} /> */}
+                {/* <img className={"pic"} style={{backgroundColor:'black'}} /> */}
+                <img className={"pic"} style={{ backgroundColor: 'white' }} />
                 <audio
                     controls
                     loop

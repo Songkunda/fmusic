@@ -291,14 +291,16 @@ function draw() {
         console.log("未播放 退出");
         return;
     }
+    let R = 145;
     let pathOfWidth = this.c_width >> 1;
     let pathOfHeight = this.c_height >> 1;
     this.ctx.clearRect(0, 0, 375, 375);
     this.ctx.save();
-    this.ctx.fillStyle = 'rgba(0,0,0,.2)';
+    this.ctx.fillStyle = 'rgba(0,0,0,.4)';
     this.ctx.translate(pathOfWidth, pathOfHeight);
     this.ctx.fillRect(0, -pathOfHeight, this.c_width, this.c_height);
-    this.analyser.getByteFrequencyData(this.dataArray);
+    let dataArray = this.analyser.getByteFrequencyData(this.dataArray);
+    dataArray = dataArray || this.dataArray;
     //画线谱
     let addR = .8 * PI / this.c_width;
     let pass = ~~this.c_width * 0.075;
@@ -313,8 +315,6 @@ function draw() {
         this.ctx.lineWidth = .5;
         this.ctx.beginPath();
         this.ctx.shadowBlur = 0;
-        // let strokeColor = 240 - i;
-        // this.ctx.strokeStyle = `rgba(${strokeColor},${strokeColor},${strokeColor},0.35)`;
         let grd2 = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
         grd2.addColorStop(0, "rgba(240,240,240,0.4)");
         grd2.addColorStop(0.2, "rgba(160,160,160,0.4)");
@@ -344,7 +344,7 @@ function draw() {
             this.ctx.lineWidth = 2;
             this.ctx.strokeStyle = "rgba(255,255,255,.9)";
             this.ctx.shadowColor = 'rgba(200,40,100,1)';
-            this.ctx.arc(0, 0, 125, -0.4 * PI, 0.4 * PI);
+            this.ctx.arc(0, 0, R, -0.4 * PI, 0.4 * PI);
             this.ctx.stroke();
 
             this.ctx.beginPath();
@@ -359,11 +359,11 @@ function draw() {
         if (i > pass && i < pass2) {
             draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7 + 2;
             if (draw_y > 2) {
-                let w = ~~draw_y / 2;
+                let w = ~~draw_y * 0.75;
                 this.ctx.lineWidth = 1;
                 this.ctx.shadowBlur = 4;
                 this.ctx.shadowColor = 'rgba(255,255,255,1)';
-                let grd = this.ctx.createLinearGradient(i, 125 - w, i, 125 + w);
+                let grd = this.ctx.createLinearGradient(i, R - w, i, R + w);
                 grd.addColorStop(0, "rgba(200,10,200,0)");
                 grd.addColorStop(0.2, "rgba(200,40,120,0.3)");
                 grd.addColorStop(0.4, "rgba(255,255,255,1)");
@@ -374,14 +374,14 @@ function draw() {
                 this.ctx.save();
                 this.ctx.beginPath();
                 this.ctx.rotate(PI - cr)
-                this.ctx.moveTo(0, 125 - w);
-                this.ctx.lineTo(0, 125 + w);
+                this.ctx.moveTo(0, R - w);
+                this.ctx.lineTo(0, R + w);
                 this.ctx.stroke();
                 this.ctx.restore();
                 // this.ctx.save();
                 // this.ctx.rotate(cr)
-                // this.ctx.moveTo(i, 125 - w);
-                // this.ctx.lineTo(i, 125 + w);
+                // this.ctx.moveTo(i, R - w);
+                // this.ctx.lineTo(i, R + w);
                 // this.ctx.stroke();
                 // this.ctx.restore();
             }
@@ -521,23 +521,9 @@ class Audio extends React.Component {
             <div>
                 <span className={"title"}>曲名:{music.title}</span>
                 <span className={"author"}>作者:{music.author}</span>
-                {/* <img className={"pic"} src={music.pic} /> */}
+                <img className={"pic"} src={music.pic} />
                 {/* <img className={"pic"} style={{backgroundColor:'black'}} /> */}
-                <img className={"pic"} style={{ backgroundColor: 'white' }} />
-                <audio
-                    controls
-                    loop
-                    ref={this.audio}
-                    id={"musicPlayer"}
-                    src={music.url}
-                    crossOrigin="anonymous"
-                    onEnded={this.changeIndex}
-                    onLoadedData={this.onchanged}
-                    onError={(err) => {
-                        console.log("music err", err)
-                    }}
-                >
-                </audio>
+                {/* <img className={"pic"} style={{ backgroundColor: 'white' }} /> */}
                 <div className={"buttons"}>
                     <button className={"prev"} onClick={this.buttonOnClick}>上一曲</button>
                     <button className={"play"} onClick={this.buttonOnClick}>播放</button>
@@ -546,6 +532,26 @@ class Audio extends React.Component {
                     <button className={"draw"} onClick={this.draw}>draw</button>
                 </div>
                 <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375} />
+                <audio
+                    controls
+                    loop
+                    ref={this.audio}
+                    id={"musicPlayer"}
+                    src={music.url}
+                    style={{
+                        position: "absolute",
+                        bottom: "-75px",
+                        left: 0,
+                        right: 0
+                    }}
+                    crossOrigin="anonymous"
+                    onEnded={this.changeIndex}
+                    onLoadedData={this.onchanged}
+                    onError={(err) => {
+                        console.log("music err", err)
+                    }}
+                >
+                </audio>
             </div>
         )
     }

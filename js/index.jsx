@@ -18,8 +18,9 @@ const musicJson = [
         "title": "本地音乐",
         "author": "\u53cc\u7b19",
         "pic": "./backgroud.jpg",
-        "url": "./music2.mp3",
+        "url": "./music2.mp3"
         // "url": "./1542590494425519.m4a"
+
         // "pic": "https:\/\/p2.music.126.net\/uwF73BxhvWiR-Kxn0wGe0g==\/109951162927951204.jpg?param=200y200",
     },
     {
@@ -290,22 +291,30 @@ function draw() {
         console.log("未播放 退出");
         return;
     }
+    let pathOfWidth = this.c_width >> 1;
+    let pathOfHeight = this.c_height >> 1;
     this.ctx.clearRect(0, 0, 375, 375);
     this.ctx.save();
-    this.ctx.fillStyle = 'rgba(0,0,0,.1)';
-    this.ctx.translate(this.c_width / 2, this.c_height / 2);
-    this.ctx.fillRect(0, -this.c_height / 2, this.c_width, this.c_height);
+    this.ctx.fillStyle = 'rgba(0,0,0,.2)';
+    this.ctx.translate(pathOfWidth, pathOfHeight);
+    this.ctx.fillRect(0, -pathOfHeight, this.c_width, this.c_height);
     this.analyser.getByteFrequencyData(this.dataArray);
     //画线谱
-    this.ctx.lineWidth = 1;
+    let addR = 1.6 * Math.PI / this.c_width;
+    let pass = ~~this.c_width * 0.075;
+    let pass2 = ~~this.c_width * 0.175;
 
-    for (let i = 0; i < this.c_width; i++) {
+
+    for (let i = 0, cr = -0.4 * Math.PI; i < pathOfWidth; i++ , cr += addR) {
         let draw_y = 1;
         if (i > 30) {
-            draw_y = ~~(this.dataArray[i + 30] / 2) + 1;
+            draw_y += ~~(this.dataArray[i + 30] >> 1);
         }
+        this.ctx.lineWidth = 1;
+        this.ctx.shadowBlur = 0;
         this.ctx.beginPath();
-        this.ctx.strokeStyle = `rgba(${240 - i},${240 - i},${240 - i},0.4)`;
+        let strokeColor = 240 - i;
+        this.ctx.strokeStyle = `rgba(${strokeColor},${strokeColor},${strokeColor},0.4)`;
         this.ctx.moveTo(i, draw_y);
         this.ctx.lineTo(i, 0);
         this.ctx.stroke();
@@ -314,43 +323,57 @@ function draw() {
         this.ctx.moveTo(i, 0);
         this.ctx.lineTo(i, -draw_y);
         this.ctx.stroke();
+        //画圆  
+        if (i == 0) {
+            this.ctx.beginPath();
+            this.ctx.shadowBlur = 5;
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = "rgba(255,170,255,1)";
+            this.ctx.shadowColor = 'rgba(200,10,200,1)';
+            this.ctx.arc(0, 0, 125, -0.4 * Math.PI, 0.4 * Math.PI);
+            this.ctx.stroke();
+        }
+        this.ctx.beginPath();
+        this.ctx.shadowBlur = 5;
+        this.ctx.strokeStyle = "rgba(255,255,255,1)";
+        this.ctx.shadowColor = 'rgba(200,10,200,0.5)';
+        if (i > pass && i < pass2) {
+            draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7 + 2;
+            if (draw_y > 2) {
+                this.ctx.lineWidth = ~~draw_y;
+                this.ctx.arc(0, 0, 125, cr, cr + addR);
+            }
+        }
+        this.ctx.stroke();
     }
 
-    //画半圆
-    this.ctx.save();
-    this.ctx.beginPath();
-    this.ctx.shadowBlur = 5;
-    this.ctx.shadowColor = "rgba(150,20,140,1)";
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeStyle = 'rgba(240,90,240,1)';
-    this.ctx.arc(0, 0, 125, -0.4 * Math.PI, 0.4 * Math.PI);
-    this.ctx.stroke();
     this.ctx.restore();
-
+    //画圆光圈
     //复制翻转
     let from = {
-        x: this.c_width / 2,
+        x: pathOfWidth,
         y: 0,
-        w: this.c_width / 2,
+        w: pathOfWidth,
         h: this.c_height
     };
     let to = {
         x: 0,
         y: 0,
-        w: this.c_width / 2,
+        w: pathOfWidth,
         h: this.c_height
     };
     this.ctx.restore();
     this.ctx.save();
-    this.ctx.setTransform(-1, 0, 0, 1, this.c_width / 2, 0);
+    this.ctx.setTransform(-1, 0, 0, 1, pathOfWidth, 0);
     this.ctx.beginPath();
-    this.ctx.drawImage(this.canvas.current, from.x, from.y, from.w, from.h, to.x, to.y, to.w, to.h);
+    this.ctx.drawImage(this.canvas_s, from.x, from.y, from.w, from.h, to.x, to.y, to.w, to.h);
     this.ctx.stroke();
     this.ctx.restore();
-    // this.ctx.beginPath();
-    // this.ctx.arc(0, 0, 125, 0.6 * Math.PI, 1.4 * Math.PI);
 
-
+    this.ctx2.clearRect(0, 0, 375, 375);
+    this.ctx2.beginPath();
+    this.ctx2.drawImage(this.canvas_s, 0, 0, this.c_width, this.c_height, 0, 0, this.c_width, this.c_height);
+    this.ctx2.stroke();
     requestAnimationFrame(this.draw);
 }
 
@@ -405,23 +428,24 @@ class Audio extends React.Component {
     }
 
     componentDidMount() {
-        this.ctx = this.canvas.current.getContext("2d");
+        this.ctx2 = this.canvas.current.getContext("2d");
         this.c_width = this.canvas.current.width;
         this.c_height = this.canvas.current.height;
-        // this.ctx.globalAlpha = .5;
+
+        //缓冲区
+        this.canvas_s = document.createElement('canvas'); // 创建一个新的canvas
+        this.canvas_s.width = this.c_width; // 创建一个正好包裹住一个粒子canvas
+        this.canvas_s.height = this.c_height;
+        this.ctx = this.canvas_s.getContext('2d');
+
+        // this.ctx.globalAlpha = .9;
         this.audioSource = this.audioCtx.createMediaElementSource(this.audio.current);
         this.audioSource.connect(this.analyser);
         this.analyser.connect(this.audioCtx.destination);
-
         this.bufferLength = this.analyser.frequencyBinCount * 44100 / this.audioCtx.sampleRate | 0;
         console.log(this.analyser.frequencyBinCount, this.bufferLength);
         this.dataArray = new Uint8Array(this.bufferLength);
         this.analyser.getByteFrequencyData(this.dataArray);
-
-
-        this.sliceWidth = this.c_width * 1.0 / this.bufferLength;
-
-        this.draw();
     }
 
     onchanged() {
@@ -432,7 +456,7 @@ class Audio extends React.Component {
     changeIndex(value) {
         this.audio.current.play();
         return;
-        let {index} = this.state;
+        let { index } = this.state;
         let newIndex = index + (Number(value) || 1);
         if (newIndex < 0) {
             newIndex = musicsNumber;
@@ -450,13 +474,13 @@ class Audio extends React.Component {
     }
 
     render() {
-        let {index} = this.state;
+        let { index } = this.state;
         let music = musicJson[index];
         return (
             <div>
                 <span className={"title"}>曲名:{music.title}</span>
                 <span className={"author"}>作者:{music.author}</span>
-                <img className={"pic"} src={music.pic}/>
+                <img className={"pic"} src={music.pic} />
                 <audio
                     controls
                     loop
@@ -478,11 +502,11 @@ class Audio extends React.Component {
                     <button className={"next"} onClick={this.buttonOnClick}>下一曲</button>
                     <button className={"draw"} onClick={this.draw}>draw</button>
                 </div>
-                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375}/>
+                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375} />
             </div>
         )
     }
 }
 
 const domContainer = document.querySelector('#app');
-ReactDOM.render(<Audio/>, domContainer);
+ReactDOM.render(<Audio />, domContainer);

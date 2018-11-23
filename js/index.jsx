@@ -286,6 +286,15 @@ const musicJson = [
 ];
 const musicsNumber = musicJson.length - 1;
 const PI = 3.1416;
+let lastTime = 0;
+function calculateFps(){
+    let  now = (+new Date),
+        fps = 1000/(now - lastTime);
+    lastTime = now;
+    return fps;
+}
+let lastFpsUpdateTime = 0,
+    lastFpsUpdate = 0;
 function draw() {
     if (this.playing === false) {
         console.log("未播放 退出");
@@ -415,6 +424,17 @@ function draw() {
     this.ctx2.beginPath();
     this.ctx2.drawImage(this.canvas_s, 0, 0, this.c_width, this.c_height, 0, 0, this.c_width, this.c_height);
     this.ctx2.stroke();
+
+    //计算fps
+    let now = + new Date();
+    //console.log(now);
+    let fps = calculateFps();
+    if (now - lastFpsUpdateTime > 1000) {
+        lastFpsUpdateTime = now;
+        lastFpsUpdate = fps;
+    };
+    this.ctx2.fillStyle = 'cornflowerblue';
+    this.ctx2.fillText(lastFpsUpdate.toFixed() + ' fps',20,60);
     requestAnimationFrame(this.draw);
 }
 

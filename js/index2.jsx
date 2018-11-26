@@ -286,15 +286,20 @@ const musicJson = [
 ];
 const musicsNumber = musicJson.length - 1;
 const PI = 3.1416;
+const PI_d4 = -0.4 * PI;
+const PI_4 = 0.4 * PI;
 let lastTime = 0;
-function calculateFps(){
-    let  now = (+new Date),
-        fps = 1000/(now - lastTime);
+
+function calculateFps() {
+    let now = (+new Date),
+        fps = 1000 / (now - lastTime);
     lastTime = now;
     return fps;
 }
+
 let lastFpsUpdateTime = 0,
     lastFpsUpdate = 0;
+
 function draw() {
     if (this.playing === false) {
         console.log("未播放 退出");
@@ -351,38 +356,40 @@ function draw() {
             this.ctx.beginPath();
             this.ctx.shadowBlur = 16;
             this.ctx.lineWidth = 2;
-            this.ctx.strokeStyle = "rgba(255,255,255,.9)";
-            this.ctx.shadowColor = 'rgba(200,40,100,1)';
-            this.ctx.arc(0, 0, R, -0.4 * PI, 0.4 * PI);
+            this.ctx.strokeStyle = "rgb(255,255,255)";
+            this.ctx.shadowColor = 'rgb(200,40,100)';
+            this.ctx.arc(0, 0, R, PI_d4, PI_4);
             this.ctx.stroke();
 
             this.ctx.beginPath();
-            this.ctx.lineWidth = 4;
+            this.ctx.lineWidth = 10;
             this.ctx.shadowBlur = 18;
-            this.ctx.strokeStyle = "rgba(200,40,100,0.05)";
-            this.ctx.shadowColor = 'rgba(200,40,100,1)';
-            this.ctx.arc(0, 0, 155, -0.4 * PI, 0.4 * PI);
+            let grd = this.ctx.createRadialGradient(0, 0, 0, 0, 0, 170);
+            grd.addColorStop(0, "#f00");
+            grd.addColorStop(1, "#f000");
+            this.ctx.strokeStyle = grd;
+            this.ctx.arc(0, 0, 160, PI_d4, PI_4);
             this.ctx.stroke();
         }
-        this.ctx.shadowColor = 'rgba(200,40,100,1)';
+        this.ctx.shadowColor = 'rgba(200,40,100)';
         if (i > pass && i < pass2) {
-            draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7 + 2;
-            if (draw_y > 2) {
+            draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7;
+            if (draw_y > 0) {
                 let w = ~~draw_y * 0.75;
                 this.ctx.lineWidth = 1;
                 this.ctx.shadowBlur = 4;
-                this.ctx.shadowColor = 'rgba(255,255,255,1)';
+                this.ctx.shadowColor = 'rgb(255,255,255)';
                 let grd = this.ctx.createLinearGradient(i, R - w, i, R + w);
-                grd.addColorStop(0, "rgba(200,10,200,0)");
-                grd.addColorStop(0.2, "rgba(200,40,120,0.3)");
-                grd.addColorStop(0.4, "rgba(255,255,255,1)");
-                grd.addColorStop(0.6, "rgba(255,255,255,1)");
-                grd.addColorStop(0.8, "rgba(200,40,120,0.3)");
+                grd.addColorStop(0, "rgb(200,10,200)");
+                grd.addColorStop(0.2, "rgb(200,40,120)");
+                grd.addColorStop(0.4, "rgb(255,255,255)");
+                grd.addColorStop(0.6, "rgb(255,255,255)");
+                grd.addColorStop(0.8, "rgb(200,40,120)");
                 grd.addColorStop(1, "rgba(200,10,200,0)");
                 this.ctx.strokeStyle = grd;
                 this.ctx.save();
                 this.ctx.beginPath();
-                this.ctx.rotate(PI - cr)
+                this.ctx.rotate(PI - cr);
                 this.ctx.moveTo(0, R - w);
                 this.ctx.lineTo(0, R + w);
                 this.ctx.stroke();
@@ -426,15 +433,16 @@ function draw() {
     this.ctx2.stroke();
 
     //计算fps
-    let now = + new Date();
+    let now = +new Date();
     //console.log(now);
     let fps = calculateFps();
     if (now - lastFpsUpdateTime > 1000) {
         lastFpsUpdateTime = now;
         lastFpsUpdate = fps;
-    };
+    }
+    ;
     this.ctx2.fillStyle = 'cornflowerblue';
-    this.ctx2.fillText(lastFpsUpdate.toFixed() + ' fps',20,60);
+    this.ctx2.fillText(lastFpsUpdate.toFixed() + ' fps', 20, 60);
     requestAnimationFrame(this.draw);
 }
 
@@ -517,7 +525,7 @@ class Audio extends React.Component {
     changeIndex(value) {
         this.audio.current.play();
         return;
-        let { index } = this.state;
+        let {index} = this.state;
         let newIndex = index + (Number(value) || 1);
         if (newIndex < 0) {
             newIndex = musicsNumber;
@@ -535,13 +543,13 @@ class Audio extends React.Component {
     }
 
     render() {
-        let { index } = this.state;
+        let {index} = this.state;
         let music = musicJson[index];
         return (
             <div>
                 <span className={"title"}>曲名:{music.title}</span>
                 <span className={"author"}>作者:{music.author}</span>
-                <img className={"pic"} src={music.pic} />
+                <img className={"pic"} src={music.pic}/>
                 {/* <img className={"pic"} style={{backgroundColor:'black'}} /> */}
                 {/* <img className={"pic"} style={{ backgroundColor: 'white' }} /> */}
                 <div className={"buttons"}>
@@ -551,7 +559,7 @@ class Audio extends React.Component {
                     <button className={"next"} onClick={this.buttonOnClick}>下一曲</button>
                     <button className={"draw"} onClick={this.draw}>draw</button>
                 </div>
-                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375} />
+                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375}/>
                 <audio
                     controls
                     loop
@@ -578,4 +586,4 @@ class Audio extends React.Component {
 }
 
 const domContainer = document.querySelector('#app');
-ReactDOM.render(<Audio />, domContainer);
+ReactDOM.render(<Audio/>, domContainer);

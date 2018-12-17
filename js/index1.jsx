@@ -3,7 +3,7 @@
 // Webkit/blink browser require a prefix, and it needs the window object specifically declared to work in Safari
 window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
-    setTimeout(callback, 1000 / 60);
+    setTimeout(callback, 18);
 };
 
 const settings = {
@@ -11,6 +11,9 @@ const settings = {
     smoothing: 0.6,
     minDecibels: -50,
     maxDecibels: -15,
+};
+const configs = {
+    fps: true
 };
 
 const musicJson = [
@@ -286,190 +289,52 @@ const musicJson = [
 ];
 const musicsNumber = musicJson.length - 1;
 const PI = 3.1416;
-const PI_d4 = -0.4 * PI;
-const PI_4 = 0.4 * PI;
-let lastTime = 0;
 
-function calculateFps() {
-    let now = (+new Date),
-        fps = 1000 / (now - lastTime);
-    lastTime = now;
-    return fps;
-}
-
-let lastFpsUpdateTime = 0,
-    lastFpsUpdate = 0;
 
 function draw() {
-    if (this.playing === false) {
-        console.log("未播放 退出");
-        return;
+    if (this.playing) { //画图
+
+
+
     }
-    let R = 145;
-    let pathOfWidth = this.c_width >> 1;
-    let pathOfHeight = this.c_height >> 1;
-    this.ctx.clearRect(0, 0, 375, 375);
-    this.ctx.save();
-    this.ctx.fillStyle = 'rgba(0,0,0,.4)';
-    this.ctx.translate(pathOfWidth, pathOfHeight);
-    this.ctx.fillRect(0, -pathOfHeight, this.c_width, this.c_height);
-    let dataArray = this.analyser.getByteFrequencyData(this.dataArray);
-    dataArray = dataArray || this.dataArray;
-    //画线谱
-    let addR = .8 * PI / this.c_width;
-    let pass = ~~this.c_width * 0.075;
-    let pass2 = ~~this.c_width * 0.175;
-
-
-    for (let i = 0, cr = -0.4 * PI; i < pathOfWidth; i++ , cr += addR) {
-        let draw_y = 1;
-        if (i > 30) {
-            draw_y += ~~(this.dataArray[i + 30] >> 1);
-        }
-        this.ctx.lineWidth = .5;
-        this.ctx.beginPath();
-        this.ctx.shadowBlur = 0;
-        let grd2 = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
-        grd2.addColorStop(0, "rgba(240,240,240,0.4)");
-        grd2.addColorStop(0.2, "rgba(160,160,160,0.4)");
-        grd2.addColorStop(0.3, "rgba(120,120,120,0.4)");
-        grd2.addColorStop(0.4, "rgba(160,160,160,0.4)");
-        grd2.addColorStop(1, "rgba(100,100,100,0.2)");
-        this.ctx.strokeStyle = grd2;
-        this.ctx.moveTo(i, draw_y);
-        this.ctx.lineTo(i, 1);
-        this.ctx.stroke();
-        this.ctx.beginPath();
-
-        let grd = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
-        grd.addColorStop(0, "rgba(255,70,170,0.4)");
-        grd.addColorStop(0.2, "rgba(200,10,100,1)");
-        grd.addColorStop(0.3, "rgba(100,50,200,1)");
-        grd.addColorStop(0.4, "rgba(200,10,100,1)");
-        grd.addColorStop(1, "rgba(50,50,0,0.4)");
-        this.ctx.strokeStyle = grd;
-        this.ctx.moveTo(i, 0);
-        this.ctx.lineTo(i, -draw_y);
-        this.ctx.stroke();
-        //画圆  
-        if (i == 0) {
-            this.ctx.beginPath();
-            this.ctx.shadowBlur = 16;
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeStyle = "rgb(255,255,255)";
-            this.ctx.shadowColor = 'rgb(200,40,100)';
-            this.ctx.arc(0, 0, R, PI_d4, PI_4);
-            this.ctx.stroke();
-
-            this.ctx.beginPath();
-            this.ctx.lineWidth = 10;
-            this.ctx.shadowBlur = 18;
-            let grd = this.ctx.createRadialGradient(0, 0, 0, 0, 0, 170);
-            grd.addColorStop(0, "#f00");
-            grd.addColorStop(1, "#f000");
-            this.ctx.strokeStyle = grd;
-            this.ctx.arc(0, 0, 160, PI_d4, PI_4);
-            this.ctx.stroke();
-        }
-        this.ctx.shadowColor = 'rgba(200,40,100)';
-        if (i > pass && i < pass2) {
-            draw_y = this.dataArray[~~(i + 30 - pass)] * 0.7;
-            if (draw_y > 0) {
-                let w = ~~draw_y * 0.75;
-                this.ctx.lineWidth = 1;
-                this.ctx.shadowBlur = 4;
-                this.ctx.shadowColor = 'rgb(255,255,255)';
-                let grd = this.ctx.createLinearGradient(i, R - w, i, R + w);
-                grd.addColorStop(0, "rgb(200,10,200)");
-                grd.addColorStop(0.2, "rgb(200,40,120)");
-                grd.addColorStop(0.4, "rgb(255,255,255)");
-                grd.addColorStop(0.6, "rgb(255,255,255)");
-                grd.addColorStop(0.8, "rgb(200,40,120)");
-                grd.addColorStop(1, "rgba(200,10,200,0)");
-                this.ctx.strokeStyle = grd;
-                this.ctx.save();
-                this.ctx.beginPath();
-                this.ctx.rotate(PI - cr);
-                this.ctx.moveTo(0, R - w);
-                this.ctx.lineTo(0, R + w);
-                this.ctx.stroke();
-                this.ctx.restore();
-                // this.ctx.save();
-                // this.ctx.rotate(cr)
-                // this.ctx.moveTo(i, R - w);
-                // this.ctx.lineTo(i, R + w);
-                // this.ctx.stroke();
-                // this.ctx.restore();
-            }
-        }
-    }
-
-    this.ctx.restore();
-    //画圆光圈
-    //复制翻转
-    let from = {
-        x: pathOfWidth,
-        y: 0,
-        w: pathOfWidth,
-        h: this.c_height
-    };
-    let to = {
-        x: 0,
-        y: 0,
-        w: pathOfWidth,
-        h: this.c_height
-    };
-    this.ctx.restore();
-    this.ctx.save();
-    this.ctx.setTransform(-1, 0, 0, 1, pathOfWidth, 0);
-    this.ctx.beginPath();
-    this.ctx.drawImage(this.canvas_s, from.x, from.y, from.w, from.h, to.x, to.y, to.w, to.h);
-    this.ctx.stroke();
-    this.ctx.restore();
-
-    this.ctx2.clearRect(0, 0, 375, 375);
-    this.ctx2.beginPath();
-    this.ctx2.drawImage(this.canvas_s, 0, 0, this.c_width, this.c_height, 0, 0, this.c_width, this.c_height);
-    this.ctx2.stroke();
-
-    //计算fps
-    let now = +new Date();
-    //console.log(now);
-    let fps = calculateFps();
-    if (now - lastFpsUpdateTime > 1000) {
-        lastFpsUpdateTime = now;
-        lastFpsUpdate = fps;
-    }
-    ;
-    this.ctx2.fillStyle = 'cornflowerblue';
-    this.ctx2.fillText(lastFpsUpdate.toFixed() + ' fps', 20, 60);
+    configs.fps && this.fpsNumber++;
     requestAnimationFrame(this.draw);
 }
 
 class Audio extends React.Component {
+
+    fpsNumber = 0;
+    playing = false;
+
     constructor(props) {
         super(props);
         this.audio = React.createRef();
+
         this.canvas = React.createRef();
+
+        this.fps = React.createRef();
+
+
         this.state = {
             index: 0
         };
-        this.playing = false;
+
+        //bind  actions
+        this.bindActions = this.bindActions.bind(this);
+        this.bindActions();
+
+    }
+
+
+    createRefs() {
+
+    }
+
+    bindActions() {
+        this.draw = draw.bind(this);
+        this.init = this.init.bind(this);
         this.buttonOnClick = this.buttonOnClick.bind(this);
         this.changeIndex = this.changeIndex.bind(this);
-        try {
-            this.audioCtx = new AudioContext();
-            this.analyser = this.audioCtx.createAnalyser();
-            this.analyser.minDecibels = settings.minDecibels;
-            this.analyser.maxDecibels = settings.maxDecibels;
-            this.analyser.smoothingTimeConstant = settings.smoothing;
-            this.analyser.fftSize = settings.size * 2;
-        } catch (e) {
-            alert('Your browser does not support AudioContext!');
-            console.log(e);
-        }
-        this.draw = draw.bind(this);
-        this.onchanged = this.onchanged.bind(this);
     }
 
     buttonOnClick(that) {
@@ -477,7 +342,6 @@ class Audio extends React.Component {
             case "play": {
                 this.audio.current.play();
                 this.playing = true;
-                this.draw();
                 break;
             }
             case "pause": {
@@ -496,35 +360,40 @@ class Audio extends React.Component {
         }
     }
 
-    componentDidMount() {
-        this.ctx2 = this.canvas.current.getContext("2d");
-        this.c_width = this.canvas.current.width;
-        this.c_height = this.canvas.current.height;
+    init() {
+        this.main_ctx = this.canvas.current.getContext("2d");
+        this.m_width = this.canvas.current.width;
+        this.m_height = this.canvas.current.height;
 
         //缓冲区
-        this.canvas_s = document.createElement('canvas'); // 创建一个新的canvas
-        this.canvas_s.width = this.c_width; // 创建一个正好包裹住一个粒子canvas
-        this.canvas_s.height = this.c_height;
-        this.ctx = this.canvas_s.getContext('2d');
-
-        // this.ctx.globalAlpha = .9;
-        this.audioSource = this.audioCtx.createMediaElementSource(this.audio.current);
-        this.audioSource.connect(this.analyser);
-        this.analyser.connect(this.audioCtx.destination);
-        this.bufferLength = this.analyser.frequencyBinCount * 44100 / this.audioCtx.sampleRate | 0;
-        console.log(this.analyser.frequencyBinCount, this.bufferLength);
-        this.dataArray = new Uint8Array(this.bufferLength);
-        this.analyser.getByteFrequencyData(this.dataArray);
+        // 创建一个新的canvas 用来画圆
+        this.arc_canvas = document.createElement('canvas');
     }
 
-    onchanged() {
-        console.log("loaded")
+    componentDidMount() {
+        this.init();
+        this.draw();
+        //开启fps
+        if (configs.fps) {
+            this.fpsInterval = setInterval(() => {
+                console.log("clean Number", this.fpsNumber);
+                this.fps.current.textContent = this.fpsNumber;
+                this.fpsNumber = 0;
+            }, 1000);
+        }
+
+
+    }
+
+
+    componentWillUnmount() {
+        this.fpsInterval && clearInterval(this.fpsInterval);
     }
 
 
     changeIndex(value) {
-        this.audio.current.play();
-        return;
+        // this.audio.current.play();
+        // return;
         let {index} = this.state;
         let newIndex = index + (Number(value) || 1);
         if (newIndex < 0) {
@@ -560,6 +429,7 @@ class Audio extends React.Component {
                     <button className={"draw"} onClick={this.draw}>draw</button>
                 </div>
                 <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375}/>
+                <span className={"fps"} ref={this.fps}>{this.fpsNumber}</span>
                 <audio
                     controls
                     loop
@@ -574,7 +444,6 @@ class Audio extends React.Component {
                     }}
                     crossOrigin="anonymous"
                     onEnded={this.changeIndex}
-                    onLoadedData={this.onchanged}
                     onError={(err) => {
                         console.log("music err", err)
                     }}

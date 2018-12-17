@@ -3,17 +3,16 @@
 // Webkit/blink browser require a prefix, and it needs the window object specifically declared to work in Safari
 window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
-    setTimeout(callback, 18);
+    setTimeout(callback, 1000 / 60);
 };
 
 const settings = {
     size: 1024,
     smoothing: 0.6,
-    minDecibels: -50,
-    maxDecibels: -15,
-};
-const configs = {
-    fps: true
+    // minDecibels: -50,
+    // maxDecibels: -15,
+    minDecibels: -45,
+    maxDecibels: 100,
 };
 
 const musicJson = [
@@ -21,7 +20,7 @@ const musicJson = [
         "title": "本地音乐",
         "author": "\u53cc\u7b19",
         "pic": "./backgroud.jpg",
-        "url": "./music2.mp3"
+        "url": "./music.mp3"
         // "url": "./1542590494425519.m4a"
 
         // "pic": "https:\/\/p2.music.126.net\/uwF73BxhvWiR-Kxn0wGe0g==\/109951162927951204.jpg?param=200y200",
@@ -289,52 +288,184 @@ const musicJson = [
 ];
 const musicsNumber = musicJson.length - 1;
 const PI = 3.1416;
+const PI_d4 = -0.4 * PI;
+const PI_4 = 0.4 * PI;
+let lastTime = 0;
 
+function calculateFps() {
+    let now = (+new Date),
+        fps = 1000 / (now - lastTime);
+    lastTime = now;
+    return fps;
+}
+
+let lastFpsUpdateTime = 0,
+    lastFpsUpdate = 0;
 
 function draw() {
-    if (this.playing) { //画图
-
-
-
+    if (this.playing === false) {
+        console.log("未播放 退出");
+        return;
     }
-    configs.fps && this.fpsNumber++;
+    let R = 145;
+    let pathOfWidth = this.c_width >> 1;
+    let pathOfHeight = this.c_height >> 1;
+    this.ctx.clearRect(0, 0, 375, 375);
+    this.ctx.save();
+    this.ctx.fillStyle = 'rgba(0,0,0,.5)';
+    this.ctx.lineCap="round";
+    this.ctx.translate(pathOfWidth, pathOfHeight);
+    this.ctx.fillRect(0, -pathOfHeight, this.c_width, pathOfHeight);
+    let dataArray = this.analyser.getByteFrequencyData(this.dataArray);
+    dataArray = dataArray || this.dataArray;
+    //画线谱
+    let pass = ~~this.c_width * 0.075;
+    let pass2 = ~~this.c_width * 0.175;
+
+    for (let i = 0; i < pathOfWidth; i++) {
+        let draw_y = ~~(this.dataArray[i + 30]) << 1 + 1;
+        this.ctx.lineWidth = .5;
+        this.ctx.beginPath();
+        this.ctx.shadowBlur = 0;
+        let grd = this.ctx.createLinearGradient(0, 0, pathOfHeight, 0);
+        grd.addColorStop(0, "rgb(51,58,112)");
+        grd.addColorStop(0.12, "rgb(126,77,106)");
+        grd.addColorStop(0.25, "rgb(206,105,90)");
+        grd.addColorStop(0.44, "rgb(213,132,73)");
+        grd.addColorStop(0.55, "rgb(165,202,219)");
+        grd.addColorStop(0.68, "rgb(84,154,179)");
+        grd.addColorStop(0.90, "rgb(98,141,161)");
+        grd.addColorStop(1, "rgb(12,123,139)");
+        this.ctx.strokeStyle = grd;
+        this.ctx.moveTo(i, 0);
+        this.ctx.lineTo(i, -draw_y);
+        this.ctx.stroke();
+    }
+    // if (i == 0) { //画圆  
+    this.ctx.beginPath();
+    this.ctx.shadowBlur = 20;
+    this.ctx.lineWidth = 6;
+    this.ctx.strokeStyle = "rgb(255,255,255)";
+    this.ctx.shadowColor = 'rgb(253,103,186)';
+    this.ctx.arc(0, 0, R, PI_d4, 0);
+    this.ctx.stroke();
+    const PI2_10 = 0.62831852;
+    let PW = ~~(PI2_10 * R);
+    let addR = .4 / R;
+
+    // console.log(PW);
+
+    for (let i = 0, cr = -0.4 * PI; i < PW; i++ , cr += addR) {
+        let draw_y = ~~(this.dataArray[i + 30]) + 1;
+        if (draw_y > 10) {
+            this.ctx.beginPath();
+            let w = ~~draw_y;
+            this.ctx.lineWidth = 2;
+            this.ctx.shadowBlur = 4;
+            this.ctx.shadowColor = 'rgb(255,255,255)';
+            let grd = this.ctx.createLinearGradient(i, R - w, i, R + w);
+            grd.addColorStop(0.1, "rgb(253,103,186)");
+            grd.addColorStop(0.5, "rgb(255,255,255)");
+            grd.addColorStop(0.9, "rgb(253,103,186)");
+            this.ctx.strokeStyle = grd;
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.rotate(PI - cr);
+            this.ctx.moveTo(0, R - w);
+            this.ctx.lineTo(0, R + w);
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+    }
+
+    this.ctx.restore();
+    //画圆光圈
+    //复制翻转
+    //上下复制
+    let from = {
+        x: pathOfWidth,
+        y: 0,
+        w: pathOfWidth,
+        h: pathOfHeight
+    };
+    let to = {
+        x: pathOfWidth,
+        y: 0,
+        w: pathOfWidth,
+        h: pathOfHeight
+    };
+    this.ctx.restore();
+    this.ctx.save();
+    this.ctx.setTransform(1, 0, 0, -1, 0, pathOfHeight << 1);
+    this.ctx.beginPath();
+    this.ctx.drawImage(this.canvas_s, from.x, from.y, from.w, from.h, to.x, to.y, to.w, to.h);
+    this.ctx.stroke();
+    this.ctx.restore();
+    //对半复制
+    let from1 = {
+        x: pathOfWidth,
+        y: 0,
+        w: pathOfWidth,
+        h: this.c_height
+    };
+    let to1 = {
+        x: 0,
+        y: 0,
+        w: pathOfWidth,
+        h: this.c_height
+    };
+    this.ctx.restore();
+    this.ctx.save();
+    this.ctx.setTransform(-1, 0, 0, 1, pathOfWidth, 0);
+    this.ctx.beginPath();
+    this.ctx.drawImage(this.canvas_s, from1.x, from1.y, from1.w, from1.h, to1.x, to1.y, to1.w, to1.h);
+    this.ctx.stroke();
+    this.ctx.restore();
+    //总复制
+    this.ctx2.clearRect(0, 0, 375, 375);
+    this.ctx2.beginPath();
+    this.ctx2.drawImage(this.canvas_s, 0, 0, this.c_width, this.c_height, 0, 0, this.c_width, this.c_height);
+    this.ctx2.stroke();
+
+    //计算fps
+    let now = +new Date();
+    //console.log(now);
+    let fps = calculateFps();
+    if (now - lastFpsUpdateTime > 1000) {
+        lastFpsUpdateTime = now;
+        lastFpsUpdate = fps;
+    }
+    ;
+    this.ctx2.fillStyle = 'cornflowerblue';
+    this.ctx2.fillText(lastFpsUpdate.toFixed() + ' fps', 20, 60);
     requestAnimationFrame(this.draw);
+    // this.draw();
 }
 
 class Audio extends React.Component {
-
-    fpsNumber = 0;
-    playing = false;
-
     constructor(props) {
         super(props);
         this.audio = React.createRef();
-
         this.canvas = React.createRef();
-
-        this.fps = React.createRef();
-
-
         this.state = {
             index: 0
         };
-
-        //bind  actions
-        this.bindActions = this.bindActions.bind(this);
-        this.bindActions();
-
-    }
-
-
-    createRefs() {
-
-    }
-
-    bindActions() {
-        this.draw = draw.bind(this);
-        this.init = this.init.bind(this);
+        this.playing = false;
         this.buttonOnClick = this.buttonOnClick.bind(this);
         this.changeIndex = this.changeIndex.bind(this);
+        try {
+            this.audioCtx = new AudioContext();
+            this.analyser = this.audioCtx.createAnalyser();
+            this.analyser.minDecibels = settings.minDecibels;
+            this.analyser.maxDecibels = settings.maxDecibels;
+            this.analyser.smoothingTimeConstant = settings.smoothing;
+            this.analyser.fftSize = settings.size * 2;
+        } catch (e) {
+            alert('Your browser does not support AudioContext!');
+            console.log(e);
+        }
+        this.draw = draw.bind(this);
+        this.onchanged = this.onchanged.bind(this);
     }
 
     buttonOnClick(that) {
@@ -342,6 +473,7 @@ class Audio extends React.Component {
             case "play": {
                 this.audio.current.play();
                 this.playing = true;
+                this.draw();
                 break;
             }
             case "pause": {
@@ -360,41 +492,36 @@ class Audio extends React.Component {
         }
     }
 
-    init() {
-        this.main_ctx = this.canvas.current.getContext("2d");
-        this.m_width = this.canvas.current.width;
-        this.m_height = this.canvas.current.height;
+    componentDidMount() {
+        this.ctx2 = this.canvas.current.getContext("2d");
+        this.c_width = this.canvas.current.width;
+        this.c_height = this.canvas.current.height;
 
         //缓冲区
-        // 创建一个新的canvas 用来画圆
-        this.arc_canvas = document.createElement('canvas');
+        this.canvas_s = document.createElement('canvas'); // 创建一个新的canvas
+        this.canvas_s.width = this.c_width; // 创建一个正好包裹住一个粒子canvas
+        this.canvas_s.height = this.c_height;
+        this.ctx = this.canvas_s.getContext('2d');
+
+        // this.ctx.globalAlpha = .9;
+        this.audioSource = this.audioCtx.createMediaElementSource(this.audio.current);
+        this.audioSource.connect(this.analyser);
+        this.analyser.connect(this.audioCtx.destination);
+        this.bufferLength = this.analyser.frequencyBinCount * 44100 / this.audioCtx.sampleRate | 0;
+        console.log(this.analyser.frequencyBinCount, this.bufferLength);
+        this.dataArray = new Uint8Array(this.bufferLength);
+        this.analyser.getByteFrequencyData(this.dataArray);
     }
 
-    componentDidMount() {
-        this.init();
-        this.draw();
-        //开启fps
-        if (configs.fps) {
-            this.fpsInterval = setInterval(() => {
-                console.log("clean Number", this.fpsNumber);
-                this.fps.current.textContent = this.fpsNumber;
-                this.fpsNumber = 0;
-            }, 1000);
-        }
-
-
-    }
-
-
-    componentWillUnmount() {
-        this.fpsInterval && clearInterval(this.fpsInterval);
+    onchanged() {
+        console.log("loaded")
     }
 
 
     changeIndex(value) {
-        // this.audio.current.play();
-        // return;
-        let {index} = this.state;
+        this.audio.current.play();
+        return;
+        let { index } = this.state;
         let newIndex = index + (Number(value) || 1);
         if (newIndex < 0) {
             newIndex = musicsNumber;
@@ -412,13 +539,13 @@ class Audio extends React.Component {
     }
 
     render() {
-        let {index} = this.state;
+        let { index } = this.state;
         let music = musicJson[index];
         return (
             <div>
                 <span className={"title"}>曲名:{music.title}</span>
                 <span className={"author"}>作者:{music.author}</span>
-                <img className={"pic"} src={music.pic}/>
+                <img className={"pic"} src={music.pic} />
                 {/* <img className={"pic"} style={{backgroundColor:'black'}} /> */}
                 {/* <img className={"pic"} style={{ backgroundColor: 'white' }} /> */}
                 <div className={"buttons"}>
@@ -428,8 +555,7 @@ class Audio extends React.Component {
                     <button className={"next"} onClick={this.buttonOnClick}>下一曲</button>
                     <button className={"draw"} onClick={this.draw}>draw</button>
                 </div>
-                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375}/>
-                <span className={"fps"} ref={this.fps}>{this.fpsNumber}</span>
+                <canvas className={"musicDynamicEffect"} ref={this.canvas} width={375} height={375} />
                 <audio
                     controls
                     loop
@@ -444,6 +570,7 @@ class Audio extends React.Component {
                     }}
                     crossOrigin="anonymous"
                     onEnded={this.changeIndex}
+                    onLoadedData={this.onchanged}
                     onError={(err) => {
                         console.log("music err", err)
                     }}
@@ -455,4 +582,4 @@ class Audio extends React.Component {
 }
 
 const domContainer = document.querySelector('#app');
-ReactDOM.render(<Audio/>, domContainer);
+ReactDOM.render(<Audio />, domContainer);
